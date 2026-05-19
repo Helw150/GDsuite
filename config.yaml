@@ -1,0 +1,115 @@
+# Hyperparameters for the 6 main evaluation families.
+#
+# Names follow Table 1 of the blog post:
+#   https://jiaxin-wen.github.io/blog/generalization-dynamics.html
+#
+# All non-persona data files share the same schema:
+#   demo rows: {split:"demo", prompt, answer,  label?, demo_set?}
+#   test rows: {split:"test", prompt, correct_answer, incorrect_answer, ...}
+# so a single `run_logprob_family` handler covers families 1-5. Only the
+# DEMO SAMPLING STRATEGY and the JOINER differ — both live here in config.
+
+vllm:
+  tensor_parallel_size: 1
+  gpu_memory_utilization: 0.9
+  dtype: bfloat16
+  enforce_eager: true
+  enable_prefix_caching: true
+  max_model_len: null
+
+# ──────────────────────────────────────────────────────────────────────
+# 1. Flipped Answer — demos have FLIPPED labels (baked into data.answer).
+#    Sample K/2 per class via `label` field; flip is already done in data.
+# ──────────────────────────────────────────────────────────────────────
+flipped_answer:
+  demo_strategy: balanced
+  joiner: "\n\n"
+  n_seeds: 4
+  data_dir: flipped_answer
+  tasks:
+    - {name: sst2,                   k: 64}
+    - {name: imdb,                   k: 24}
+    - {name: rotten_tomatoes,        k: 64}
+    - {name: poem_sentiment,         k: 64}
+    - {name: yahoo_health_computers, k: 64}
+    - {name: yahoo_business_science, k: 64}
+    - {name: emotion,                k: 100}
+    - {name: emotion_anger_joy,      k: 100}
+
+# ──────────────────────────────────────────────────────────────────────
+# 2. Repetitive Answer — random K demos. Each test item carries its own
+#    incorrect_answer (the repeated demo pattern, baked into data).
+#    `algebra` is a 4-prompt-template sub-family with self-contained
+#    prompts (no demos sampled at runtime).
+# ──────────────────────────────────────────────────────────────────────
+repetitive_answer:
+  demo_strategy: random
+  joiner: "\n"
+  n_seeds: 4
+  data_dir: repetitive_answer
+  tasks:
+    # 3 PvC-style tasks: K demos sampled randomly per item.
+    - {name: code_tracing,    k: 8}
+    - {name: letter_counting, k: 4}
+    - {name: logic,           k: 64}
+    # 4 prebuilt 4-shot prompt templates (zero-shot from runner's POV —
+    # the demos are baked into each row's `prompt`).
+    - {name: algebra/original}
+    - {name: algebra/v2fmt}
+    - {name: algebra/numbered}
+    - {name: algebra/instruction}
+
+# ──────────────────────────────────────────────────────────────────────
+# 3. Successive Answer — ordered K demos drawn from one of the demo_sets
+#    shipped per task; `seed` picks the demo_set. Each test item carries
+#    the (K+1)-th sequence element as `incorrect_answer` (baked into data
+#    at the canonical K).
+# ──────────────────────────────────────────────────────────────────────
+successive_answer:
+  demo_strategy: ordered
+  joiner: "\n"
+  n_seeds: 4
+  data_dir: successive_answer
+  tasks:
+    - {name: number_words, k: 10}
+    - {name: letters,      k: 10}
+    - {name: arithmetic,   k: 32}
+    - {name: even,         k: 32}
+
+# ──────────────────────────────────────────────────────────────────────
+# 4. Truthy Answer — random K demos drawn from a class-imbalanced pool;
+#    each test item carries the majority demo label as `incorrect_answer`
+#    (constant per task, baked into data).
+# ──────────────────────────────────────────────────────────────────────
+truthy_answer:
+  demo_strategy: random
+  joiner: "\n"
+  n_seeds: 4
+  data_dir: truthy_answer
+  tasks:
+    - {name: surprising_truth,     k: 8}
+    - {name: common_misconception, k: 100}
+
+# ──────────────────────────────────────────────────────────────────────
+# 5. Intuitive Answer — zero-shot CRT. Each test item carries its own
+#    intuitive-wrong answer as `incorrect_answer`.
+# ──────────────────────────────────────────────────────────────────────
+intuitive_answer:
+  demo_strategy: none
+  data_dir: intuitive_answer
+  tasks:
+    - {name: crt}
+
+# ──────────────────────────────────────────────────────────────────────
+# 6. Multi-hop Persona QA — GENERATIVE ICL. Full fact pool fed as demos;
+#    each test question sampled n_samples_per_question times; regex match
+#    against `expected_answer_regex`.
+# ──────────────────────────────────────────────────────────────────────
+multihop_persona_qa:
+  data_dir: multihop_persona_qa
+  personas: [wolf, oppenheimer, rasputin, hubbard, rand, madoff]
+  n_seeds: 4
+  n_samples_per_question: 100
+  temperature: 1.0
+  max_new_tokens: 300
+  stop: ["\nQ:", "\n\nQ:"]
