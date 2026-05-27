@@ -107,26 +107,26 @@ def apply_oa_layout(fig: go.Figure, height: int, top_margin: int = 72) -> None:
         zerolinecolor="rgba(31,30,27,0.25)",
         linecolor="rgba(31,30,27,0.55)",
         tickcolor="rgba(31,30,27,0.55)",
-        tickfont=dict(family=BODY_FONT, color=INK, size=16),
-        title=dict(font=dict(family=BODY_FONT, color=INK, size=18)),
+        tickfont=dict(family=BODY_FONT, color=INK, size=18),
+        title=dict(font=dict(family=BODY_FONT, color=INK, size=20)),
         ticks="outside",
         automargin=True,
     )
     fig.update_layout(
         colorway=OA_COLORWAY,
-        font=dict(family=BODY_FONT, color=INK, size=16),
+        font=dict(family=BODY_FONT, color=INK, size=18),
         paper_bgcolor="#ffffff",
         plot_bgcolor="#ffffff",
         legend=dict(
             bgcolor="#ffffff",
             bordercolor="rgba(31,30,27,0.2)",
             borderwidth=1,
-            font=dict(family=BODY_FONT, color=INK, size=15),
+            font=dict(family=BODY_FONT, color=INK, size=17),
         ),
         hoverlabel=dict(
             bgcolor=INK,
             bordercolor=ACCENT,
-            font=dict(family=BODY_FONT, color="#f5efe6", size=15),
+            font=dict(family=BODY_FONT, color="#f5efe6", size=17),
         ),
         height=height,
         margin=dict(t=top_margin, r=28, b=72, l=72),
@@ -142,7 +142,7 @@ def write_fig(fig: go.Figure, stem: str) -> None:
     png_path = OUT / f"{stem}.png"
     fig.write_json(json_path)
     fig.write_html(html_path, include_plotlyjs="cdn", config={"responsive": True, "displaylogo": False})
-    fig.write_image(png_path, width=3000, height=1600, scale=2)
+    fig.write_image(png_path, width=1500, height=800, scale=4)
     print("wrote", json_path)
     print("wrote", html_path)
     print("wrote", png_path)
@@ -154,7 +154,7 @@ def write_fig_size(fig: go.Figure, stem: str, width: int, height: int) -> None:
     png_path = OUT / f"{stem}.png"
     fig.write_json(json_path)
     fig.write_html(html_path, include_plotlyjs="cdn", config={"responsive": True, "displaylogo": False})
-    fig.write_image(png_path, width=width, height=height, scale=3)
+    fig.write_image(png_path, width=width, height=height, scale=6)
     print("wrote", json_path)
     print("wrote", html_path)
     print("wrote", png_path)
@@ -250,7 +250,7 @@ def plot_optima(fam: pd.DataFrame, opt_models: list[str], stem: str, metric: str
                 mode="lines+markers+text",
                 text=[params_label(p) for p in sub.params],
                 textposition="top center",
-                textfont=dict(size=14, color=INK),
+                textfont=dict(size=16, color=INK),
                 marker=dict(size=9, color=OA_COLORWAY[0]),
                 line=dict(width=2.2, color=OA_COLORWAY[0]),
                 showlegend=False,
@@ -294,8 +294,8 @@ def plot_twitter_optima(fam: pd.DataFrame, opt_models: list[str], stem: str, met
                 x=sub.compute_flops,
                 y=sub.score_mean,
                 mode="lines+markers",
-                marker=dict(size=11, color=OA_COLORWAY[0]),
-                line=dict(width=3.2, color=OA_COLORWAY[0]),
+                marker=dict(size=12, color=OA_COLORWAY[0]),
+                line=dict(width=3.6, color=OA_COLORWAY[0]),
                 showlegend=False,
                 customdata=list(zip(sub.model, sub.params, sub.tokens, sub.metric)),
                 hovertemplate=(
@@ -319,7 +319,7 @@ def plot_twitter_optima(fam: pd.DataFrame, opt_models: list[str], stem: str, met
                 showarrow=False,
                 xshift=0,
                 yshift=14,
-                font=dict(family=BODY_FONT, size=17, color=INK),
+                font=dict(family=BODY_FONT, size=19, color=INK),
                 row=row,
                 col=col,
             )
@@ -342,12 +342,12 @@ def plot_twitter_optima(fam: pd.DataFrame, opt_models: list[str], stem: str, met
         width=1600,
         height=900,
         margin=dict(t=58, r=26, b=70, l=70),
-        font=dict(family=BODY_FONT, color=INK, size=22),
+        font=dict(family=BODY_FONT, color=INK, size=24),
     )
-    fig.update_annotations(font=dict(family=HEAD_FONT, size=26, color=INK))
-    fig.update_xaxes(tickfont=dict(size=21), title_font=dict(size=23))
-    fig.update_yaxes(tickfont=dict(size=21), title_font=dict(size=23))
-    write_fig_size(fig, stem, width=3200, height=1800)
+    fig.update_annotations(font=dict(family=HEAD_FONT, size=30, color=INK))
+    fig.update_xaxes(tickfont=dict(size=24), title_font=dict(size=27))
+    fig.update_yaxes(tickfont=dict(size=24), title_font=dict(size=27))
+    write_fig_size(fig, stem, width=1600, height=900)
 
 
 def main() -> None:
