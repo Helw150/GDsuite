@@ -142,7 +142,7 @@ def write_fig(fig: go.Figure, stem: str) -> None:
     png_path = OUT / f"{stem}.png"
     fig.write_json(json_path)
     fig.write_html(html_path, include_plotlyjs="cdn", config={"responsive": True, "displaylogo": False})
-    fig.write_image(png_path, width=1500, height=800, scale=2)
+    fig.write_image(png_path, width=3000, height=1600, scale=2)
     print("wrote", json_path)
     print("wrote", html_path)
     print("wrote", png_path)
@@ -154,7 +154,7 @@ def write_fig_size(fig: go.Figure, stem: str, width: int, height: int) -> None:
     png_path = OUT / f"{stem}.png"
     fig.write_json(json_path)
     fig.write_html(html_path, include_plotlyjs="cdn", config={"responsive": True, "displaylogo": False})
-    fig.write_image(png_path, width=width, height=height, scale=2)
+    fig.write_image(png_path, width=width, height=height, scale=3)
     print("wrote", json_path)
     print("wrote", html_path)
     print("wrote", png_path)
@@ -347,7 +347,7 @@ def plot_twitter_optima(fam: pd.DataFrame, opt_models: list[str], stem: str, met
     fig.update_annotations(font=dict(family=HEAD_FONT, size=26, color=INK))
     fig.update_xaxes(tickfont=dict(size=21), title_font=dict(size=23))
     fig.update_yaxes(tickfont=dict(size=21), title_font=dict(size=23))
-    write_fig_size(fig, stem, width=1600, height=900)
+    write_fig_size(fig, stem, width=3200, height=1800)
 
 
 def main() -> None:
