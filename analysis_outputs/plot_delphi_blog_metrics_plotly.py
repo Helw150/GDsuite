@@ -275,7 +275,17 @@ def plot_optima(fam: pd.DataFrame, opt_models: list[str], stem: str, metric: str
             col=col,
         )
     apply_oa_layout(fig, height=760, top_margin=72)
-    fig.update_layout(legend=dict(orientation="h", x=0.5, xanchor="center", y=-0.12, yanchor="top"))
+    fig.update_layout(
+        margin=dict(b=96),
+        legend=dict(
+            orientation="h",
+            x=0.0,
+            xanchor="left",
+            y=-0.12,
+            yanchor="top",
+            font=dict(family=BODY_FONT, color=INK, size=20),
+        ),
+    )
     write_fig(fig, stem)
 
 
@@ -346,9 +356,16 @@ def plot_twitter_optima(fam: pd.DataFrame, opt_models: list[str], stem: str, met
     fig.update_layout(
         width=1600,
         height=900,
-        margin=dict(t=58, r=26, b=104, l=70),
+        margin=dict(t=58, r=26, b=112, l=70),
         font=dict(family=BODY_FONT, color=INK, size=24),
-        legend=dict(orientation="h", x=0.5, xanchor="center", y=-0.09, yanchor="top"),
+        legend=dict(
+            orientation="h",
+            x=0.0,
+            xanchor="left",
+            y=-0.09,
+            yanchor="top",
+            font=dict(family=BODY_FONT, color=INK, size=28),
+        ),
     )
     fig.update_annotations(font=dict(family=HEAD_FONT, size=30, color=INK))
     fig.update_xaxes(tickfont=dict(size=24), title_font=dict(size=27))
