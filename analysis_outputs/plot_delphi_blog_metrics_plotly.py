@@ -276,17 +276,20 @@ def plot_optima(fam: pd.DataFrame, opt_models: list[str], stem: str, metric: str
         )
     apply_oa_layout(fig, height=760, top_margin=72)
     fig.update_layout(
-        margin=dict(b=96),
+        height=860,
+        margin=dict(b=112),
         legend=dict(
             orientation="h",
-            x=0.0,
-            xanchor="left",
+            x=0.5,
+            xanchor="center",
             y=-0.12,
             yanchor="top",
+            bgcolor="rgba(255,255,255,0)",
+            borderwidth=0,
             font=dict(family=BODY_FONT, color=INK, size=20),
         ),
     )
-    write_fig(fig, stem)
+    write_fig_size(fig, stem, width=1500, height=860)
 
 
 def plot_twitter_optima(fam: pd.DataFrame, opt_models: list[str], stem: str, metric: str) -> None:
@@ -355,22 +358,24 @@ def plot_twitter_optima(fam: pd.DataFrame, opt_models: list[str], stem: str, met
     apply_oa_layout(fig, height=760, top_margin=58)
     fig.update_layout(
         width=1600,
-        height=900,
-        margin=dict(t=58, r=26, b=112, l=70),
+        height=980,
+        margin=dict(t=58, r=26, b=128, l=70),
         font=dict(family=BODY_FONT, color=INK, size=24),
         legend=dict(
             orientation="h",
-            x=0.0,
-            xanchor="left",
+            x=0.5,
+            xanchor="center",
             y=-0.09,
             yanchor="top",
+            bgcolor="rgba(255,255,255,0)",
+            borderwidth=0,
             font=dict(family=BODY_FONT, color=INK, size=28),
         ),
     )
     fig.update_annotations(font=dict(family=HEAD_FONT, size=30, color=INK))
     fig.update_xaxes(tickfont=dict(size=24), title_font=dict(size=27))
     fig.update_yaxes(tickfont=dict(size=24), title_font=dict(size=27))
-    write_fig_size(fig, stem, width=1600, height=900)
+    write_fig_size(fig, stem, width=1600, height=980)
 
 
 def main() -> None:
