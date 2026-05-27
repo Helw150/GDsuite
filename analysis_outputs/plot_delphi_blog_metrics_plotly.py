@@ -101,7 +101,7 @@ def metric_filter(df: pd.DataFrame, metric: str) -> pd.DataFrame:
     ].copy()
 
 
-def apply_oa_layout(fig: go.Figure, title: str, height: int, title_size: int = 20, top_margin: int = 72) -> None:
+def apply_oa_layout(fig: go.Figure, height: int, top_margin: int = 72) -> None:
     axis_defaults = dict(
         gridcolor="rgba(31,30,27,0.12)",
         zerolinecolor="rgba(31,30,27,0.25)",
@@ -115,7 +115,6 @@ def apply_oa_layout(fig: go.Figure, title: str, height: int, title_size: int = 2
     fig.update_layout(
         colorway=OA_COLORWAY,
         font=dict(family=BODY_FONT, color=INK, size=13),
-        title=dict(text=title, font=dict(family=HEAD_FONT, color=INK, size=title_size), x=0.02, xanchor="left"),
         paper_bgcolor="#ffffff",
         plot_bgcolor="#ffffff",
         legend=dict(
@@ -183,7 +182,7 @@ def metric_y_range(metric: str) -> list[float]:
     return [0.0, 0.5]
 
 
-def plot_grid(fam: pd.DataFrame, stem: str, title: str, metric: str) -> None:
+def plot_grid(fam: pd.DataFrame, stem: str, metric: str) -> None:
     fig = make_subplots(
         rows=2,
         cols=3,
@@ -227,11 +226,11 @@ def plot_grid(fam: pd.DataFrame, stem: str, title: str, metric: str) -> None:
             row=row,
             col=col,
         )
-    apply_oa_layout(fig, title, height=760, top_margin=94)
+    apply_oa_layout(fig, height=760, top_margin=72)
     write_fig(fig, stem)
 
 
-def plot_optima(fam: pd.DataFrame, opt_models: list[str], stem: str, title: str, metric: str) -> None:
+def plot_optima(fam: pd.DataFrame, opt_models: list[str], stem: str, metric: str) -> None:
     opt = fam[fam.model.isin(opt_models)].copy()
     fig = make_subplots(
         rows=2,
@@ -273,11 +272,11 @@ def plot_optima(fam: pd.DataFrame, opt_models: list[str], stem: str, title: str,
             row=row,
             col=col,
         )
-    apply_oa_layout(fig, title, height=760, top_margin=94)
+    apply_oa_layout(fig, height=760, top_margin=72)
     write_fig(fig, stem)
 
 
-def plot_twitter_optima(fam: pd.DataFrame, opt_models: list[str], stem: str, title: str, metric: str) -> None:
+def plot_twitter_optima(fam: pd.DataFrame, opt_models: list[str], stem: str, metric: str) -> None:
     opt = fam[fam.model.isin(opt_models)].copy()
     fig = make_subplots(
         rows=2,
@@ -338,12 +337,11 @@ def plot_twitter_optima(fam: pd.DataFrame, opt_models: list[str], stem: str, tit
             row=row,
             col=col,
         )
-    apply_oa_layout(fig, title, height=760, title_size=28, top_margin=118)
+    apply_oa_layout(fig, height=760, top_margin=58)
     fig.update_layout(
         width=1600,
         height=900,
-        margin=dict(t=118, r=26, b=70, l=70),
-        title=dict(text=title, font=dict(family=HEAD_FONT, color=INK, size=28), x=0.02, xanchor="left"),
+        margin=dict(t=58, r=26, b=70, l=70),
         font=dict(family=BODY_FONT, color=INK, size=15),
     )
     fig.update_annotations(font=dict(family=HEAD_FONT, size=17, color=INK))
@@ -382,38 +380,31 @@ def main() -> None:
             "hard_acc",
             "accuracy_like",
             "hard_acc",
-            "Do bigger language models generalize better?",
-            "Accuracy on six shortcut-vs-generalization stress tests across training compute",
         ),
         (
             "prob_margin",
             "prob_margin",
             "P(expected) - P(parrot)",
-            "Do bigger language models prefer the expected answer over the shortcut?",
-            "Probability margin, P(expected) - P(shortcut), across six stress tests",
         ),
     ]
-    for metric, stem_metric, y_title, headline, subtitle in specs:
+    for metric, stem_metric, y_title in specs:
         fam = family_means(df, metric)
         fam.to_csv(OUT / f"delphi_blog_{stem_metric}_family_means.csv", index=False)
         plot_grid(
             fam,
             f"delphi_plotly_blog_{stem_metric}_grid_all_nonseed",
-            f"{headline}<br><sup>{subtitle}; each line is one compute budget</sup>",
             metric,
         )
         plot_optima(
             fam,
             opt_models,
             f"delphi_plotly_blog_{stem_metric}_collection_optima_to_1e23",
-            f"{headline}<br><sup>{subtitle}; compute-optimal checkpoints only</sup>",
             metric,
         )
         plot_twitter_optima(
             fam,
             opt_models,
             f"delphi_twitter_blog_{stem_metric}_collection_optima_to_1e23",
-            f"{headline}<br><sup>{subtitle}; compute-optimal checkpoints only</sup>",
             metric,
         )
 
