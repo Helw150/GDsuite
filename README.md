@@ -4,6 +4,37 @@ A toy eval suite for tracing generalization dynamics of LM pre-training.
 Read our [blog post](https://jiaxin-wen.github.io/blog/generalization-dynamics.html)
 for details.
 
+## Delphi fork additions
+
+This fork keeps the upstream GDsuite tasks and evaluator, and adds the
+infrastructure used to evaluate the Marin Delphi checkpoint collection at scale.
+Compared with [`Jiaxin-Wen/GDsuite`](https://github.com/Jiaxin-Wen/GDsuite),
+the added pieces are:
+
+- `delphi_models.txt`: the Delphi model list used for the 88-model sweep.
+- `setup_env.sh`, `cluster_env.sh`, `run_delphi_model.sh`,
+  `eval_delphi.sbatch`, and `submit_delphi_evals.sh`: SLURM orchestration for
+  running the whole Delphi collection. Cluster-specific partition, account,
+  QoS, GPU constraints, memory, and scratch paths are configured with
+  environment variables. The main entrypoint is:
+
+  ```bash
+  bash submit_delphi_evals.sh
+  ```
+
+  By default this skips models that already have a complete result set. Use
+  `RESUBMIT_ALL=1 bash submit_delphi_evals.sh` to force the full collection.
+
+- `push_results_to_hf.py`: uploads completed eval JSONs and summary metrics to
+  the Hugging Face dataset
+  [`WillHeld/gdsuite-delphi-result`](https://huggingface.co/datasets/WillHeld/gdsuite-delphi-result).
+  The summaries include hard accuracy, persona match rate, probability margins,
+  normalized correct probabilities, and correct-answer log probabilities.
+- `analysis_outputs/`: generated Delphi analysis artifacts. The final Plotly
+  figures use Jiaxin's blog-style metrics: hard accuracy for the logprob-style
+  families, `P(expected) - P(parrot)` probability margin for the soft-metric
+  plots, and persona QA match rate.
+
 | Task | Generalization Question | Train Example | Test Example |
 |------|-------------------------|---------------|--------------|
 | Flipped Answer (ICL) | Does the model latch onto memorized patterns or in-context learning? | Q: Review: a great movie; A: Negative<br>Q: Review: terrible film; A: Positive | Q: Review: a smile on your face<br>**Parrot:** Positive **Intelligence:** Negative |
@@ -38,8 +69,10 @@ ds = load_dataset("jiaxin-wen/generalization-dynamics-evals",
 
 ## 2. Run the eval
 
+For a single model, the upstream workflow still works:
+
 ```bash
-git clone https://github.com/Jiaxin-Wen/GDsuite.git
+git clone https://github.com/Helw150/GDsuite.git
 cd GDsuite
 pip install vllm torch transformers pyyaml datasets huggingface_hub
 
@@ -47,6 +80,38 @@ python run_eval.py \
     --model_name allenai/Olmo-3-1025-7B \
     --revision   stage1-step1413814 \
     --output_dir outputs/olmo3-7b
+```
+
+For the Delphi collection in this fork, configure the cluster environment once
+and submit the array jobs:
+
+```bash
+bash setup_env.sh
+bash submit_delphi_evals.sh
+```
+
+Useful submit options:
+
+```bash
+DRY_RUN=1 bash submit_delphi_evals.sh
+MAX_PARALLEL=40 bash submit_delphi_evals.sh
+RESUBMIT_ALL=1 bash submit_delphi_evals.sh
+CKPT_ROOT=/scratch/$USER/gdsuite-delphi bash submit_delphi_evals.sh
+SLURM_PARTITION=gpu SLURM_ACCOUNT=my-account bash submit_delphi_evals.sh
+SMALL_CONSTRAINT=a100 BIG_CONSTRAINT='a100|h100' bash submit_delphi_evals.sh
+```
+
+After eval jobs finish, publish completed outputs with:
+
+```bash
+python push_results_to_hf.py
+```
+
+Regenerate the committed Delphi Plotly figures with:
+
+```bash
+uv run --with datasets --with huggingface_hub --with pandas --with plotly --with kaleido \
+    python analysis_outputs/plot_delphi_blog_metrics_plotly.py
 ```
 
 
