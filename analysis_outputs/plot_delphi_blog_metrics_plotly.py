@@ -29,8 +29,8 @@ COLLECTION = "marin-community/delphi-69f93cbd09845c03b070bae9"
 
 INK = "#1f1e1b"
 ACCENT = "#9e6d43"
-BODY_FONT = "Lato, -apple-system, BlinkMacSystemFont, sans-serif"
-HEAD_FONT = "Herbik, Georgia, serif"
+BODY_FONT = "Noto Sans Display, Noto Sans, Lato, -apple-system, BlinkMacSystemFont, sans-serif"
+HEAD_FONT = "Noto Sans Display, Noto Sans, Lato, -apple-system, BlinkMacSystemFont, sans-serif"
 OA_COLORWAY = [
     "#9e6d43",
     "#2d4a3e",
@@ -107,26 +107,26 @@ def apply_oa_layout(fig: go.Figure, height: int, top_margin: int = 72) -> None:
         zerolinecolor="rgba(31,30,27,0.25)",
         linecolor="rgba(31,30,27,0.55)",
         tickcolor="rgba(31,30,27,0.55)",
-        tickfont=dict(family=BODY_FONT, color=INK, size=12),
-        title=dict(font=dict(family=BODY_FONT, color=INK, size=13)),
+        tickfont=dict(family=BODY_FONT, color=INK, size=16),
+        title=dict(font=dict(family=BODY_FONT, color=INK, size=18)),
         ticks="outside",
         automargin=True,
     )
     fig.update_layout(
         colorway=OA_COLORWAY,
-        font=dict(family=BODY_FONT, color=INK, size=13),
+        font=dict(family=BODY_FONT, color=INK, size=16),
         paper_bgcolor="#ffffff",
         plot_bgcolor="#ffffff",
         legend=dict(
             bgcolor="#ffffff",
             bordercolor="rgba(31,30,27,0.2)",
             borderwidth=1,
-            font=dict(family=BODY_FONT, color=INK, size=12),
+            font=dict(family=BODY_FONT, color=INK, size=15),
         ),
         hoverlabel=dict(
             bgcolor=INK,
             bordercolor=ACCENT,
-            font=dict(family=BODY_FONT, color="#f5efe6", size=12),
+            font=dict(family=BODY_FONT, color="#f5efe6", size=15),
         ),
         height=height,
         margin=dict(t=top_margin, r=28, b=72, l=72),
@@ -206,8 +206,8 @@ def plot_grid(fam: pd.DataFrame, stem: str, metric: str) -> None:
                     name=flops_label(cval),
                     legendgroup=flops_label(cval),
                     showlegend=(idx == 0),
-                    marker=dict(size=6, color=color_by_compute[cval]),
-                    line=dict(width=1.5, color=color_by_compute[cval]),
+                    marker=dict(size=8, color=color_by_compute[cval]),
+                    line=dict(width=2.6, color=color_by_compute[cval]),
                     customdata=list(zip(sub.model, sub.tokens, sub.task_count, sub.metric)),
                     hovertemplate=(
                         "<b>%{customdata[0]}</b><br>"
@@ -250,9 +250,9 @@ def plot_optima(fam: pd.DataFrame, opt_models: list[str], stem: str, metric: str
                 mode="lines+markers+text",
                 text=[params_label(p) for p in sub.params],
                 textposition="top center",
-                textfont=dict(size=10, color=INK),
-                marker=dict(size=7, color=OA_COLORWAY[0]),
-                line=dict(width=1.8, color=OA_COLORWAY[0]),
+                textfont=dict(size=14, color=INK),
+                marker=dict(size=9, color=OA_COLORWAY[0]),
+                line=dict(width=2.2, color=OA_COLORWAY[0]),
                 showlegend=False,
                 customdata=list(zip(sub.model, sub.params, sub.tokens, sub.task_count, sub.metric)),
                 hovertemplate=(
@@ -294,8 +294,8 @@ def plot_twitter_optima(fam: pd.DataFrame, opt_models: list[str], stem: str, met
                 x=sub.compute_flops,
                 y=sub.score_mean,
                 mode="lines+markers",
-                marker=dict(size=8, color=OA_COLORWAY[0]),
-                line=dict(width=2.3, color=OA_COLORWAY[0]),
+                marker=dict(size=11, color=OA_COLORWAY[0]),
+                line=dict(width=3.2, color=OA_COLORWAY[0]),
                 showlegend=False,
                 customdata=list(zip(sub.model, sub.params, sub.tokens, sub.metric)),
                 hovertemplate=(
@@ -319,7 +319,7 @@ def plot_twitter_optima(fam: pd.DataFrame, opt_models: list[str], stem: str, met
                 showarrow=False,
                 xshift=0,
                 yshift=14,
-                font=dict(family=BODY_FONT, size=12, color=INK),
+                font=dict(family=BODY_FONT, size=17, color=INK),
                 row=row,
                 col=col,
             )
@@ -342,11 +342,11 @@ def plot_twitter_optima(fam: pd.DataFrame, opt_models: list[str], stem: str, met
         width=1600,
         height=900,
         margin=dict(t=58, r=26, b=70, l=70),
-        font=dict(family=BODY_FONT, color=INK, size=15),
+        font=dict(family=BODY_FONT, color=INK, size=22),
     )
-    fig.update_annotations(font=dict(family=HEAD_FONT, size=17, color=INK))
-    fig.update_xaxes(tickfont=dict(size=13), title_font=dict(size=14))
-    fig.update_yaxes(tickfont=dict(size=13), title_font=dict(size=14))
+    fig.update_annotations(font=dict(family=HEAD_FONT, size=26, color=INK))
+    fig.update_xaxes(tickfont=dict(size=21), title_font=dict(size=23))
+    fig.update_yaxes(tickfont=dict(size=21), title_font=dict(size=23))
     write_fig_size(fig, stem, width=1600, height=900)
 
 
