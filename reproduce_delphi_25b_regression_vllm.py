@@ -45,10 +45,9 @@ def score(model_name, dtype, prompt_token_ids):
         max_model_len=max(2048, len(prompt_token_ids) + 8),
     )
     out = llm.generate(
-        prompts=None,
+        prompts=[{"prompt_token_ids": prompt_token_ids}],
         sampling_params=SamplingParams(max_tokens=1, prompt_logprobs=1,
                                        temperature=0.0),
-        prompt_token_ids=[prompt_token_ids],
         use_tqdm=False,
     )[0]
 
