@@ -20,7 +20,13 @@ Captured rows (in this order):
   self_attn_out           self_attn module return (sanity ~ o_proj_out)
   residual_after_attn     layer_0_input + self_attn_out
   post_attn_layernorm     RMSNorm before MLP
-  mlp                     mlp output
+  mlp_input               input arg to mlp (= post_attn_layernorm output)
+  gate_proj               gate_proj output (intermediate dim ~21504)
+  silu_gate               act_fn(gate_proj) — SwiGLU activation
+  up_proj                 up_proj output (intermediate dim ~21504)
+  down_proj_in            silu_gate * up_proj — the SwiGLU intermediate
+  down_proj_out           down_proj output (= mlp output)
+  mlp                     mlp module return (sanity ~ down_proj_out)
   residual_after_mlp      residual_after_attn + mlp           (= layer_0_output)
   layer_0_output          layer module return                 (= idx 1 of full profile)
 
@@ -163,7 +169,19 @@ def main() -> None:
     handles.append(layer0.self_attn.o_proj.register_forward_hook(out_hook("o_proj_out")))
     handles.append(layer0.self_attn.register_forward_hook(out_hook("self_attn_out")))
     handles.append(layer0.post_attention_layernorm.register_forward_hook(out_hook("post_attn_layernorm")))
+    handles.append(layer0.mlp.register_forward_hook(in_hook("mlp_input")))
     handles.append(layer0.mlp.register_forward_hook(out_hook("mlp")))
+    print(f"mlp type:       {type(layer0.mlp).__name__}")
+    print(f"mlp subs:       {sorted(n for n, _ in layer0.mlp.named_children())}\n")
+    if hasattr(layer0.mlp, "gate_proj"):
+        handles.append(layer0.mlp.gate_proj.register_forward_hook(out_hook("gate_proj")))
+    if hasattr(layer0.mlp, "act_fn"):
+        handles.append(layer0.mlp.act_fn.register_forward_hook(out_hook("silu_gate")))
+    if hasattr(layer0.mlp, "up_proj"):
+        handles.append(layer0.mlp.up_proj.register_forward_hook(out_hook("up_proj")))
+    if hasattr(layer0.mlp, "down_proj"):
+        handles.append(layer0.mlp.down_proj.register_forward_hook(in_hook("down_proj_in")))
+        handles.append(layer0.mlp.down_proj.register_forward_hook(out_hook("down_proj_out")))
     handles.append(layer0.register_forward_hook(out_hook("layer_0_output")))
 
     rope_name = install_rope_capture(layer0)
@@ -193,6 +211,12 @@ def main() -> None:
         "o_proj_in", "o_proj_out", "self_attn_out",
         "residual_after_attn",
         "post_attn_layernorm",
+        "mlp_input",
+        "gate_proj",
+        "silu_gate",
+        "up_proj",
+        "down_proj_in",
+        "down_proj_out",
         "mlp",
         "residual_after_mlp",
         "layer_0_output",
