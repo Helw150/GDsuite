@@ -11,8 +11,13 @@ Reports per residual-stream tap:
   - norm_max          : max over token positions of ||x_t||_2
   - norm_mean         : mean over token positions of ||x_t||_2
   - norm_total        : ||x||_2 of the whole (seq, hidden) tensor
+  - mean              : signed mean over all elements  (DC offset)
+  - median            : signed median over all elements
+  - sigma             : population std over all elements
 
 Levanter's "norm" column is per-position; norm_max is the cleanest match.
+The mean/median/sigma columns are the across-layer summary stats — sigma
+tracks the typical magnitude while absmax tracks the worst-case outlier.
 
 Output rows:
   idx 0          → embedding output
@@ -34,16 +39,20 @@ FALLBACK_TEXT = "The unanimous Declaration of the thirteen united States of Amer
 
 
 def _stats(x: torch.Tensor) -> dict:
-    """absmax + per-token L2 norms for a (1, seq, hidden) residual stream
-    tap. Computes in fp32 regardless of x.dtype."""
+    """absmax + per-token L2 norms + signed mean/median/sigma for a
+    (1, seq, hidden) residual stream tap. Computes in fp32."""
     x = x.detach().to(torch.float32)
     flat = x.reshape(-1, x.shape[-1])           # (seq, hidden)
     per_tok = flat.norm(dim=-1)                  # (seq,)
+    elems = flat.reshape(-1)
     return {
         "absmax": flat.abs().max().item(),
         "norm_max": per_tok.max().item(),
         "norm_mean": per_tok.mean().item(),
         "norm_total": flat.norm().item(),
+        "mean": elems.mean().item(),
+        "median": elems.median().item(),
+        "sigma": elems.std(unbiased=False).item(),
     }
 
 
@@ -51,7 +60,10 @@ def _row(idx: str, s: dict) -> str:
     return (f"{idx:<12}  absmax={s['absmax']:>12.4f}   "
             f"norm_max={s['norm_max']:>12.4f}   "
             f"norm_mean={s['norm_mean']:>12.4f}   "
-            f"norm_total={s['norm_total']:>12.4f}")
+            f"norm_total={s['norm_total']:>12.4f}   "
+            f"mean={s['mean']:>+9.4f}   "
+            f"median={s['median']:>+9.4f}   "
+            f"sigma={s['sigma']:>9.4f}")
 
 
 def main():

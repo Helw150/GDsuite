@@ -52,7 +52,8 @@ captures: dict = {}
 
 
 def _stats(t: torch.Tensor) -> dict:
-    """absmax + per-token L2 norms + (head, channel) of the absmax.
+    """absmax + per-token L2 norms + (head, channel) of the absmax + signed
+    mean/median/sigma across all elements.
 
     Handles (B, T, F) and (B, H, T, D) — for the latter we permute heads
     next to the feature dim so per-token norms combine heads, matching the
@@ -73,12 +74,16 @@ def _stats(t: torch.Tensor) -> dict:
     chan_absmax = flat.abs().max(dim=0).values  # (F,)
     abs_idx = int(chan_absmax.argmax().item())
     chan_per_head = x.shape[-1] // H
+    elems = flat.reshape(-1)
     return {
         "shape": orig_shape,
         "absmax": flat.abs().max().item(),
         "norm_max": per_tok.max().item(),
         "norm_mean": per_tok.mean().item(),
         "norm_total": flat.norm().item(),
+        "mean": elems.mean().item(),
+        "median": elems.median().item(),
+        "sigma": elems.std(unbiased=False).item(),
         "head": (abs_idx // chan_per_head) if H > 1 else None,
         "channel": (abs_idx % chan_per_head) if H > 1 else abs_idx,
     }
@@ -90,6 +95,9 @@ def _row(name: str, s: dict) -> str:
             f"nrm_max={s['norm_max']:>11.4f}  "
             f"nrm_mean={s['norm_mean']:>10.4f}  "
             f"nrm_tot={s['norm_total']:>11.4f}  "
+            f"mean={s['mean']:>+8.4f}  "
+            f"median={s['median']:>+8.4f}  "
+            f"sigma={s['sigma']:>8.4f}  "
             f"ch={s['channel']:>4}{head_str}  shape={s['shape']}")
 
 
